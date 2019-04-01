@@ -1,0 +1,48 @@
+name:                cellular-automaton
+version:             0.1.0.0
+github:              "little-schemer/cellular-automaton"
+license:             BSD3
+author:              "little Haskeller"
+maintainer:          "example@example.com"
+copyright:           "2019 little Haskeller"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/little-schemer/cellular-automaton#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  cellular-automaton-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cellular-automaton
+
+tests:
+  cellular-automaton-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cellular-automaton
