@@ -21,14 +21,17 @@ description:         Please see the README on GitHub at <https://github.com/litt
 
 dependencies:
 - base >= 4.7 && < 5
+- random
+- vector
+- gloss
 
 library:
   source-dirs: src
 
 executables:
-  cellular-automaton-exe:
+  life-game:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:         life-game
     ghc-options:
     - -threaded
     - -rtsopts
