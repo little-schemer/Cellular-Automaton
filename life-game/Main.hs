@@ -38,7 +38,7 @@ simCells field _ _ cells = Vec.imap check cells
   where
     check i cell
       | cell      = if (count == 2 || count == 3) then True else False
-      | otherwise = if (count == 3) then True else False
+      | otherwise = if (count == 3)               then True else False
       where
         f (x, y) = cells Vec.! (posToIndex field (x, y))
         bs = [f (x, y) | (x, y) <- mooreN field (indexToPos field i)]
