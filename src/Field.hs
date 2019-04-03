@@ -50,13 +50,4 @@ vonNeumannN field (x, y) = neighborhood field (x, y) lst
 -- | ムーア近傍
 mooreN :: Field -> Position -> [Position]
 mooreN field (x, y) = neighborhood field (x, y) lst
-  where
-    lst = [(a, b) | a <- ns, b <- ns, not (a == 0 && b == 0)]
-    ns  = [-1, 0, 1]
-
-
----------------------------------------------------
--- * Cell の表示
----------------------------------------------------
--- draw :: Field -> (Int -> b -> Picture) -> Cells -> Picture
--- draw field rule cells = Pictures $ Vec.toList $ Vec.imap rule cells
+  where lst = [(a, b) | a <- [-1, 0, 1], b <- [-1, 0, 1], (a /= 0 || b /= 0)]
