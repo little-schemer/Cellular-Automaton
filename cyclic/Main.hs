@@ -39,7 +39,7 @@ drawCells field cells = Pictures $ Vec.toList $ Vec.imap f cells
     f i cell = Translate x y $ Color (colors !! cell) $ rectangleSolid size size
       where
         (x, y) = indexToGlossPoint field i
-        size = cellSize field
+        size = cellSize field - 1
 
 simCells :: Field -> ViewPort -> Float -> Cells -> Cells
 simCells field _ time cells = Vec.imap check cells
