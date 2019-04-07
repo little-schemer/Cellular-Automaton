@@ -25,7 +25,7 @@ main = do
       window = InWindow "Life Game" (sizeX, sizeY) (10, 10)
 
 draw :: Field -> Cells -> Picture
-draw field cs = Pictures $ ((Vec.toList $ Vec.imap drawCell (cells cs))) ++ [Color red $ Text (show (count cs))]
+draw field cs = Pictures $ ((Vec.toList $ Vec.imap drawCell (cells cs))) ++ [Scale 0.125 0.125 $ Color red $ Text (show (count cs))]
   where
     drawCell i cell = if cell
                       then Translate x y $ Color cyan $ rectangleSolid size size
