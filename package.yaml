@@ -29,6 +29,16 @@ library:
   source-dirs: src
 
 executables:
+  # test:
+  #   main:                Main.hs
+  #   source-dirs:         app
+  #   ghc-options:
+  #   - -threaded
+  #   - -rtsopts
+  #   - -with-rtsopts=-N
+  #   dependencies:
+  #   - cellular-automaton
+
   life-game:
     main:                Main.hs
     source-dirs:         life-game

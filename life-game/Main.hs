@@ -9,41 +9,49 @@ import Field
 
 
 type Vec   = Vec.Vector
-data Cells = Cells { cells :: Vec Bool, count :: Int }
+data Model = Model { cells :: Vec Bool, count :: Int }
+
+
+width    = 200 :: Int
+height   = 150 :: Int
+cellSize =   5 :: Float
 
 
 main :: IO ()
 main = do
-  bs <- replicateM (width field * height field) randomIO
+  cs <- randomCells
   -- let cells = setCell field [(10,10), (11,10),(12,10),(10,11),(11,12)] -- グライダー
-  let cellData = Cells { cells = Vec.fromList bs, count = 0 }
-  simulate window black 10 cellData (draw field) (simCells field)
+  let model = Model { cells = Vec.fromList cs, count = 0 }
+  simulate window black 20 model (drawModel field) (simCells field)
     where
-      field = Field { width = 200, height = 150, cellSize = 5}
-      sizeX = width field * (truncate (cellSize field))
-      sizeY = height field * (truncate (cellSize field))
-      window = InWindow "Life Game" (sizeX, sizeY) (10, 10)
+      field  = initField width height cellSize
+      window = InWindow "Life Game" (windowSize field) (0, 0)
 
-draw :: Field -> Cells -> Picture
-draw field cs = Pictures $ ((Vec.toList $ Vec.imap drawCell (cells cs))) ++ [Scale 0.125 0.125 $ Color red $ Text (show (count cs))]
+randomCells :: IO [Bool]
+randomCells = do
+  cs <- replicateM (width * height) randomIO
+  return cs
+
+drawModel :: Field -> Model -> Picture
+drawModel fd cs = Pictures [cellPic, msgPic]
   where
+    cellPic = Pictures $ Vec.toList $ Vec.imap drawCell (cells cs)
+    msgPic  = dispMsg fd white ("Step : " ++ show (count cs))
     drawCell i cell = if cell
-                      then Translate x y $ Color cyan $ rectangleSolid size size
+                      then Color cyan $ indexToDrawCell fd i
                       else Blank
-      where
-        (x, y) = indexToGlossPoint field i
-        size = cellSize field - 1
 
-simCells :: Field -> ViewPort -> Float -> Cells -> Cells
-simCells field _ _ cs = cs { cells = Vec.imap check (cells cs), count = count cs + 1 }
+simCells :: Field -> ViewPort -> Float -> Model -> Model
+simCells field _ _ cs = cs'
   where
+    cs' = cs { cells = Vec.imap check (cells cs), count = count cs + 1 }
     check i cell
-      | cell      = if (count == 2 || count == 3) then True else False
-      | otherwise = if (count == 3)               then True else False
+      | cell      = if (cellNum == 2 || cellNum == 3) then True else False
+      | otherwise = if (cellNum == 3)                 then True else False
       where
         f (x, y) = (cells cs) Vec.! (posToIndex field (x, y))
         bs = [f (x, y) | (x, y) <- mooreN field (indexToPos field i)]
-        count = length $ filter (\x -> x) bs
+        cellNum = length $ filter (\x -> x) bs
 
 -- setDataAt :: [a] -> [(Int, a)] -> [a]
 -- setDataAt xs as = foldl f xs as
