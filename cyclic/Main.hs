@@ -1,3 +1,11 @@
+--
+-- コマンドラインオプション
+--   + -n : "n" = フォン・ノイマン近傍, "m" = ムーア近傍
+--   + -s : 状態の数
+--
+--   ex : stack exec -- cyclic -s 10 -n n
+--
+
 module Main where
 
 
