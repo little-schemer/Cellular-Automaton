@@ -52,6 +52,13 @@ indexToDrawCell fd i = Polygon [(x, y), (x + s, y), (x + s, y + s), (x, y + s)]
     s = cs fd - 1
     (x, y) = indexToGlossPoint fd i
 
+posToDrawCell :: Field -> Position -> Picture
+posToDrawCell fd (x, y) =
+  Polygon [(x', y'), (x' + s, y'), (x' + s, y' + s), (x', y' + s)]
+  where
+    s = cs fd - 1
+    (x', y') = posToGlossPoint fd (x, y)
+
 -- | メッセージの表示
 dispMsg :: Field -> Color -> String -> Picture
 dispMsg fd clr str = Translate x y $ Scale 0.15 0.15 $ Color clr $ Text str
@@ -88,11 +95,23 @@ neighborhood fd (x, y) lst = [(mod (x + a) w, mod (y + b) h) | (a, b) <- lst]
   where (w, h) = (ix fd, iy fd)
 
 -- | フォン・ノイマン近傍
+--
+--       0
+--    3     1
+--       2
+--
 vonNeumannN :: Field -> Position -> [Position]
 vonNeumannN fd (x, y) = neighborhood fd (x, y) lst
-  where lst = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+  where lst = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
 
 -- | ムーア近傍
+--
+--   7 0 1
+--   6   2
+--   5 4 3
+--
 mooreN :: Field -> Position -> [Position]
 mooreN fd (x, y) = neighborhood fd (x, y) lst
-  where lst = [(a, b) | a <- [-1, 0, 1], b <- [-1, 0, 1], (a /= 0 || b /= 0)]
+  where lst = [ (0, 1), (1, 1), (1, 0), (1, -1)
+              , (0, -1) , (-1, -1), (-1, 0), (-1, 1)]

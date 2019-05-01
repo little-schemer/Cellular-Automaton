@@ -39,19 +39,29 @@ executables:
   #   dependencies:
   #   - cellular-automaton
 
-  # life-game:
-  #   main:                Main.hs
-  #   source-dirs:         life-game
-  #   ghc-options:
-  #   - -threaded
-  #   - -rtsopts
-  #   - -with-rtsopts=-N
-  #   dependencies:
-  #   - cellular-automaton
+  life-game:
+    main:                Main.hs
+    source-dirs:         life-game
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cellular-automaton
 
   cyclic:
     main:                Main.hs
     source-dirs:         cyclic
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - cellular-automaton
+
+  langton:
+    main:                Main.hs
+    source-dirs:         langton
     ghc-options:
     - -threaded
     - -rtsopts
