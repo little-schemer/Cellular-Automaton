@@ -23,46 +23,48 @@ data Field = Field { ix :: Int   -- ^ 横の Cell 数 (Int)
 
 -- | Field の初期化
 initField :: Int -> Int -> Float -> Field
-initField width height cellSize = Field { ix = width
-                                        , iy = height
-                                        , fx = xx
-                                        , fy = yy
-                                        , cs = cellSize
-                                        , msg = msgLine
-                                        , rpX = - xx * cellSize / 2
-                                        , rpY = - (yy * cellSize - msgLine) / 2 }
+initField width height cellSize =
+  Field { ix = width
+        , iy = height
+        , fx = xx
+        , fy = yy
+        , cs = cellSize
+        , msg = msgLine
+        , rpX = - xx * cellSize / 2
+        , rpY = - (yy * cellSize - msgLine) / 2 }
   where
     [xx, yy] = map fromIntegral[width, height]
     msgLine = 25
 
 -- | Window のサイズ
 windowSize :: Field -> (Int, Int)
-windowSize fd = (ix fd * ics, iy fd * ics + imsg)
-  where [ics, imsg] = map truncate [cs fd, msg fd]
+windowSize field = (ix field * ics, iy field * ics + imsg)
+  where [ics, imsg] = map truncate [cs field, msg field]
 
 
 ---------------------------------------------------
 -- * 表示
 ---------------------------------------------------
 
--- | Cell の描画
+-- | Cell の描画 : Index -> Cell
 indexToDrawCell :: Field -> Int -> Picture
-indexToDrawCell fd i = Polygon [(x, y), (x + s, y), (x + s, y + s), (x, y + s)]
+indexToDrawCell field i = Polygon [(x, y), (x + s, y), (x + s, y + s), (x, y + s)]
   where
-    s = cs fd - 1
-    (x, y) = indexToGlossPoint fd i
+    s = cs field - 1
+    (x, y) = indexToGlossPoint field i
 
+-- | Cell の描画 : Position -> Cell
 posToDrawCell :: Field -> Position -> Picture
-posToDrawCell fd (x, y) =
+posToDrawCell field (x, y) =
   Polygon [(x', y'), (x' + s, y'), (x' + s, y' + s), (x', y' + s)]
   where
-    s = cs fd - 1
-    (x', y') = posToGlossPoint fd (x, y)
+    s = cs field - 1
+    (x', y') = posToGlossPoint field (x, y)
 
 -- | メッセージの表示
 dispMsg :: Field -> Color -> String -> Picture
-dispMsg fd clr str = Translate x y $ Scale 0.15 0.15 $ Color clr $ Text str
-  where (x, y) = (rpX fd + 5, rpY fd - msg fd + 5)
+dispMsg field clr str = Translate x y $ Scale 0.15 0.15 $ Color clr $ Text str
+  where (x, y) = (rpX field + 5, rpY field - msg field + 5)
 
 
 ---------------------------------------------------
@@ -71,28 +73,28 @@ dispMsg fd clr str = Translate x y $ Scale 0.15 0.15 $ Color clr $ Text str
 
 -- | Position -> Index
 posToIndex :: Field -> Position -> Index
-posToIndex fd (x, y) = x + y * ix fd
+posToIndex field (x, y) = x + y * ix field
 
 -- | Index -> Position
 indexToPos :: Field -> Index -> Position
-indexToPos fd i = let (y, x) = divMod i (ix fd) in (x, y)
+indexToPos field i = let (y, x) = divMod i (ix field) in (x, y)
 
 -- | Position -> Gloss の座標
 posToGlossPoint :: Field -> Position -> Point
-posToGlossPoint fd (x, y) = (rpX fd + xx * cs fd, rpY fd + yy * cs fd)
+posToGlossPoint field (x, y) = (rpX field + xx * cs field, rpY field + yy * cs field)
   where [xx, yy] = map fromIntegral [x, y]
 
 -- | Index -> Gloss の座標
 indexToGlossPoint :: Field -> Index -> Point
-indexToGlossPoint fd i = posToGlossPoint fd $ indexToPos fd i
+indexToGlossPoint field i = posToGlossPoint field $ indexToPos field i
 
 
 ---------------------------------------------------
 -- * 近傍の位置
 ---------------------------------------------------
 neighborhood :: Field -> Position -> [(Int, Int)] -> [Position]
-neighborhood fd (x, y) lst = [(mod (x + a) w, mod (y + b) h) | (a, b) <- lst]
-  where (w, h) = (ix fd, iy fd)
+neighborhood field (x, y) lst = [(mod (x + a) w, mod (y + b) h) | (a, b) <- lst]
+  where (w, h) = (ix field, iy field)
 
 -- | フォン・ノイマン近傍
 --
@@ -101,7 +103,7 @@ neighborhood fd (x, y) lst = [(mod (x + a) w, mod (y + b) h) | (a, b) <- lst]
 --       2
 --
 vonNeumannN :: Field -> Position -> [Position]
-vonNeumannN fd (x, y) = neighborhood fd (x, y) lst
+vonNeumannN field (x, y) = neighborhood field (x, y) lst
   where lst = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
 
@@ -112,6 +114,6 @@ vonNeumannN fd (x, y) = neighborhood fd (x, y) lst
 --   5 4 3
 --
 mooreN :: Field -> Position -> [Position]
-mooreN fd (x, y) = neighborhood fd (x, y) lst
+mooreN field (x, y) = neighborhood field (x, y) lst
   where lst = [ (0, 1), (1, 1), (1, 0), (1, -1)
               , (0, -1) , (-1, -1), (-1, 0), (-1, 1)]
