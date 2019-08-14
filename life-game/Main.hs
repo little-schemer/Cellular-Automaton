@@ -15,14 +15,14 @@ data Model = Model { cells :: Vec Bool, count :: Int }
 width    = 200 :: Int
 height   = 150 :: Int
 cellSize =   5 :: Float
-
+field    = initField width height cellSize
 
 main :: IO ()
 main = do
   cs <- randomCells
   -- let cells = setCell field [(10,10), (11,10),(12,10),(10,11),(11,12)] -- グライダー
   let model = Model { cells = Vec.fromList cs, count = 0 }
-  simulate window black 20 model (drawModel field) (simCells field)
+  simulate window black 20 model drawModel simCells
     where
       field  = initField width height cellSize
       window = InWindow "Life Game" (windowSize field) (0, 0)
@@ -32,17 +32,17 @@ randomCells = do
   cs <- replicateM (width * height) randomIO
   return cs
 
-drawModel :: Field -> Model -> Picture
-drawModel fd cs = Pictures [cellPic, msgPic]
+drawModel :: Model -> Picture
+drawModel cs = Pictures [cellPic, msgPic]
   where
     cellPic = Pictures $ Vec.toList $ Vec.imap drawCell (cells cs)
-    msgPic  = dispMsg fd white ("Step : " ++ show (count cs))
+    msgPic  = dispMsg field white ("Step : " ++ show (count cs))
     drawCell i cell = if cell
-                      then Color cyan $ indexToDrawCell fd i
+                      then Color cyan $ indexToDrawCell field i
                       else Blank
 
-simCells :: Field -> ViewPort -> Float -> Model -> Model
-simCells field _ _ cs = cs'
+simCells :: ViewPort -> Float -> Model -> Model
+simCells _ _ cs = cs'
   where
     cs' = cs { cells = Vec.imap check (cells cs), count = count cs + 1 }
     check i cell
