@@ -12,9 +12,9 @@ type Vec   = Vec.Vector
 data Model = Model { cells :: Vec Bool, count :: Int }
 
 
-width    = 200 :: Int
-height   = 150 :: Int
-cellSize =   5 :: Float
+width    = 300 :: Int
+height   = 200 :: Int
+cellSize =   4 :: Float
 field    = initField width height cellSize
 
 main :: IO ()
@@ -22,7 +22,7 @@ main = do
   cs <- randomCells
   -- let cells = setCell field [(10,10), (11,10),(12,10),(10,11),(11,12)] -- グライダー
   let model = Model { cells = Vec.fromList cs, count = 0 }
-  simulate window black 20 model drawModel simCells
+  simulate window black 10 model drawModel simCells
     where
       field  = initField width height cellSize
       window = InWindow "Life Game" (windowSize field) (0, 0)
