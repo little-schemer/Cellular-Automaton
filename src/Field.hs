@@ -1,119 +1,78 @@
 module Field where
 
 import Graphics.Gloss
+import qualified Data.Vector as Vec
 
 
-type Index    = Int             -- ^ Cell の Index
+type Index = Int                -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
-data Field = Field { ix :: Int   -- ^ 横の Cell 数 (Int)
-                   , iy :: Int   -- ^ 縦の Cell 数 (Int)
-                   , fx :: Float -- ^ 横の Cell 数 (Float)
-                   , fy :: Float -- ^ 縦の Cell 数 (Float)
-                   , cs :: Float -- ^ Cell の大きさ
-                   , msg :: Float -- ^ message 表示部分の高さ
-                   , rpX :: Float -- ^ 基準点の x 座標
-                   , rpY :: Float -- ^ 基準点の y 座標
+data Field = Field { cellSize :: Float
+                   , positionTable :: Vec.Vector Position
+                   , pointTable :: Vec.Vector Point
+                   , neighborhoodTable :: Vec.Vector ([Index], [Index])
                    } deriving Show
 
 
----------------------------------------------------
+-------------------------------------------------------------
 -- * 初期化
----------------------------------------------------
+-------------------------------------------------------------
 
 -- | Field の初期化
 initField :: Int -> Int -> Float -> Field
-initField width height cellSize =
-  Field { ix = width
-        , iy = height
-        , fx = xx
-        , fy = yy
-        , cs = cellSize
-        , msg = msgLine
-        , rpX = - xx * cellSize / 2
-        , rpY = - (yy * cellSize - msgLine) / 2 }
+initField width height size = Field { cellSize      = size
+                                    , positionTable = positionT
+                                    , pointTable    = pointT
+                                    , neighborhoodTable = neighborhoodT
+                                    }
   where
-    [xx, yy] = map fromIntegral[width, height]
-    msgLine = 25
+    positionT = Vec.generate (width * height) (indexToPos width)
+    pointT    = Vec.map (posToPoint width height size) positionT
+    neighborhoodT = Vec.map (neighborhood width height) positionT
 
 -- | Window のサイズ
-windowSize :: Field -> (Int, Int)
-windowSize field = (ix field * ics, iy field * ics + imsg)
-  where [ics, imsg] = map truncate [cs field, msg field]
+windowSize :: Int -> Int -> Float -> (Int, Int)
+windowSize width height size = (width * ics, height * ics)
+  where ics = truncate size
 
 
----------------------------------------------------
--- * 表示
----------------------------------------------------
-
--- | Cell の描画 : Index -> Cell
-indexToDrawCell :: Field -> Int -> Picture
-indexToDrawCell field i = Polygon [(x, y), (x + s, y), (x + s, y + s), (x, y + s)]
-  where
-    s = cs field - 1
-    (x, y) = indexToGlossPoint field i
-
--- | Cell の描画 : Position -> Cell
-posToDrawCell :: Field -> Position -> Picture
-posToDrawCell field (x, y) =
-  Polygon [(x', y'), (x' + s, y'), (x' + s, y' + s), (x', y' + s)]
-  where
-    s = cs field - 1
-    (x', y') = posToGlossPoint field (x, y)
-
--- | メッセージの表示
-dispMsg :: Field -> Color -> String -> Picture
-dispMsg field clr str = Translate x y $ Scale 0.15 0.15 $ Color clr $ Text str
-  where (x, y) = (rpX field + 5, rpY field - msg field + 5)
-
-
----------------------------------------------------
--- * Index <--> Position
----------------------------------------------------
+-------------------------------------------------------------
+-- * 変換
+-------------------------------------------------------------
+-- | Index -> Position
+indexToPos :: Int -> Index -> Position
+indexToPos width i = let (y, x) = divMod i width in (x, y)
 
 -- | Position -> Index
-posToIndex :: Field -> Position -> Index
-posToIndex field (x, y) = x + y * ix field
+posToIndex :: Int -> Position -> Index
+posToIndex width (x, y) = x + y * width
 
--- | Index -> Position
-indexToPos :: Field -> Index -> Position
-indexToPos field i = let (y, x) = divMod i (ix field) in (x, y)
-
--- | Position -> Gloss の座標
-posToGlossPoint :: Field -> Position -> Point
-posToGlossPoint field (x, y) = (rpX field + xx * cs field, rpY field + yy * cs field)
-  where [xx, yy] = map fromIntegral [x, y]
-
--- | Index -> Gloss の座標
-indexToGlossPoint :: Field -> Index -> Point
-indexToGlossPoint field i = posToGlossPoint field $ indexToPos field i
+-- | Position -> Point
+posToPoint :: Int -> Int -> Float -> Position -> Point
+posToPoint width height size (x, y) = (x', y')
+  where
+    [w, h, xx, yy] = map fromIntegral [width, height, x, y]
+    x' = (xx - (w - 1) / 2) * size
+    y' = ((h - 1) / 2 - yy) * size
 
 
----------------------------------------------------
--- * 近傍の位置
----------------------------------------------------
-neighborhood :: Field -> Position -> [(Int, Int)] -> [Position]
-neighborhood field (x, y) lst = [(mod (x + a) w, mod (y + b) h) | (a, b) <- lst]
-  where (w, h) = (ix field, iy field)
-
--- | フォン・ノイマン近傍
---
---       0
---    3     1
---       2
---
-vonNeumannN :: Field -> Position -> [Position]
-vonNeumannN field (x, y) = neighborhood field (x, y) lst
-  where lst = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+-------------------------------------------------------------
+-- * 表示
+-------------------------------------------------------------
+-- | Cell の描画 : Index -> Cell
+indexToDrawCell :: Field -> Index -> Picture
+indexToDrawCell field i = translate x y $ rectangleSolid s s
+  where
+    (x, y) = (pointTable field) Vec.! i
+    s      = cellSize field
 
 
--- | ムーア近傍
---
---   7 0 1
---   6   2
---   5 4 3
---
-mooreN :: Field -> Position -> [Position]
-mooreN field (x, y) = neighborhood field (x, y) lst
-  where lst = [ (0, 1), (1, 1), (1, 0), (1, -1)
-              , (0, -1) , (-1, -1), (-1, 0), (-1, 1)]
+-------------------------------------------------------------
+-- * 近傍の計算
+-------------------------------------------------------------
+neighborhood :: Int -> Int -> Position -> ([Index], [Index])
+neighborhood width height pos = (neumann, moore')
+  where
+    posList (x, y) lst = [(mod (x + a) width, mod (y + b) height) | (a, b) <- lst]
+    neumann = map (posToIndex width) $ posList pos [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    moore'  = map (posToIndex width) $ posList pos [(1, -1), (1, 1), (-1, 1), (-1, -1)]
