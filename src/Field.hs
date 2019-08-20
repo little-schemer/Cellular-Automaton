@@ -64,7 +64,7 @@ indexToDrawCell :: Field -> Index -> Picture
 indexToDrawCell field i = translate x y $ rectangleSolid s s
   where
     (x, y) = (pointTable field) Vec.! i
-    s      = cellSize field
+    s      = cellSize field - 1
 
 
 -------------------------------------------------------------
