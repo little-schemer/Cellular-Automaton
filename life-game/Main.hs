@@ -1,6 +1,7 @@
 module Main where
 
 import qualified Data.Vector as Vec
+import qualified Data.Vector.Unboxed as VU
 import System.Random
 import Control.Monad
 import Graphics.Gloss
@@ -11,8 +12,8 @@ import Field
 type Model = Vec.Vector Bool
 
 width  = 300 :: Int
-height = 200 :: Int
-size   =   4 :: Float
+height = 300 :: Int
+size   =   3 :: Float
 field  = initField width height size
 
 
