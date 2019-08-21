@@ -2,15 +2,15 @@ module Field where
 
 import Graphics.Gloss
 import qualified Data.Vector as Vec
-import qualified Data.Vector.Unboxed as VU
+-- import qualified Data.Vector.Unboxed as VU
 
 
 type Index = Int                -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
 data Field = Field { cellSize :: Float
-                   , positionTable :: VU.Vector Position
-                   , pointTable :: VU.Vector Point
+                   , positionTable :: Vec.Vector Position
+                   , pointTable :: Vec.Vector Point
                    , neighborhoodTable :: Vec.Vector ([Index], [Index])
                    } deriving Show
 
@@ -27,9 +27,9 @@ initField width height size = Field { cellSize      = size
                                     , neighborhoodTable = neighborhoodT
                                     }
   where
-    positionT = VU.generate (width * height) (indexToPos width)
-    pointT    = VU.map (posToPoint width height size) positionT
-    neighborhoodT = Vec.map (neighborhood width height) $ VU.convert positionT
+    positionT = Vec.generate (width * height) (indexToPos width)
+    pointT    = Vec.map (posToPoint width height size) positionT
+    neighborhoodT = Vec.map (neighborhood width height) positionT
 
 -- | Window のサイズ
 windowSize :: Int -> Int -> Float -> (Int, Int)
@@ -64,7 +64,7 @@ posToPoint width height size (x, y) = (x', y')
 indexToDrawCell :: Field -> Index -> Picture
 indexToDrawCell field i = translate x y $ rectangleSolid s s
   where
-    (x, y) = (pointTable field) VU.! i
+    (x, y) = (pointTable field) Vec.! i
     s      = cellSize field - 1
 
 
