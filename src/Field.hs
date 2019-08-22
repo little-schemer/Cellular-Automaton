@@ -2,7 +2,6 @@ module Field where
 
 import Graphics.Gloss
 import qualified Data.Vector as Vec
--- import qualified Data.Vector.Unboxed as VU
 
 
 type Index = Int                -- ^ Cell の Index
@@ -62,7 +61,7 @@ posToPoint width height size (x, y) = (x', y')
 -------------------------------------------------------------
 -- | Cell の描画 : Index -> Cell
 indexToDrawCell :: Field -> Index -> Picture
-indexToDrawCell field i = translate x y $ rectangleSolid s s
+indexToDrawCell field i = Polygon [(x, y), (x + s, y), (x + s, y + s), (x, y + s)]
   where
     (x, y) = (pointTable field) Vec.! i
     s      = cellSize field - 1

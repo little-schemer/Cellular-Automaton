@@ -1,7 +1,6 @@
 module Main where
 
 import qualified Data.Vector as Vec
--- import qualified Data.Vector.Unboxed as VU
 import System.Random
 import Control.Monad
 import Graphics.Gloss
