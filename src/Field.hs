@@ -2,6 +2,7 @@ module Field where
 
 import Graphics.Gloss
 import qualified Data.Vector as Vec
+-- import qualified Data.Vector.Unboxed as VU
 
 
 type Index = Int                -- ^ Cell の Index

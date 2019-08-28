@@ -10,22 +10,17 @@ import Field
 
 type Model = Vec.Vector Bool
 
-width  = 300 :: Int
-height = 200 :: Int
-size   =   4 :: Float
+width  = 500 :: Int
+height = 400 :: Int
+size   =   3 :: Float
 field  = initField width height size
 
 
 main :: IO ()
 main = do
-  cells <- Vec.fromList <$> randomCells
-  simulate window black 10 cells drawModel simCells
+  cells <- Vec.replicateM (width * height) (randomIO :: IO Bool)
+  simulate window black 5 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
-
-randomCells :: IO [Bool]
-randomCells = do
-  cs <- replicateM (width * height) randomIO
-  return cs
 
 drawModel :: Model -> Picture
 drawModel cells = cellPic
