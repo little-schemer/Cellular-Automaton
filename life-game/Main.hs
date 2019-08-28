@@ -10,8 +10,8 @@ import Field
 
 type Model = Vec.Vector Bool
 
-width  = 500 :: Int
-height = 400 :: Int
+width  = 400 :: Int
+height = 300 :: Int
 size   =   3 :: Float
 field  = initField width height size
 
