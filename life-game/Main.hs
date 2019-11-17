@@ -1,25 +1,25 @@
 module Main where
 
-import qualified Data.Vector as Vec
-import System.Random
-import Control.Monad
-import Graphics.Gloss
-import Graphics.Gloss.Data.ViewPort
-import Field
+import           Control.Monad
+import qualified Data.Vector                  as Vec
+import           Field
+import           Graphics.Gloss
+import           Graphics.Gloss.Data.ViewPort
+import           System.Random
 
 
 type Model = Vec.Vector Bool
 
-width  = 500 :: Int
-height = 300 :: Int
-size   =   3 :: Float
+width  = 300 :: Int
+height = 200 :: Int
+size   =   4 :: Float
 field  = initField width height size
 
 
 main :: IO ()
 main = do
   cells <- Vec.replicateM (width * height) (randomIO :: IO Bool)
-  simulate window black 5 cells drawModel simCells
+  simulate window black 10 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
 drawModel :: Model -> Picture
