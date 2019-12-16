@@ -1,3 +1,4 @@
 .stack-work/
 cellular-automaton.cabal
 *~
+*.lock
