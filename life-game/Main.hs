@@ -12,8 +12,8 @@ import           System.Random
 type Model = V.Vector Bool
 
 
-width  = 400 :: Int
-height = 300 :: Int
+width  = 500 :: Int
+height = 250 :: Int
 size   =   3 :: Float
 field  = initField width height size
 
@@ -21,7 +21,7 @@ field  = initField width height size
 main :: IO ()
 main = do
   cells <- V.replicateM (width * height) (randomIO :: IO Bool)
-  simulate window black 10 cells drawModel simCells
+  simulate window black 15 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
 drawModel :: Model -> Picture
