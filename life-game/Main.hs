@@ -9,37 +9,34 @@ import           Graphics.Gloss.Data.ViewPort
 import           System.Random
 
 
-type Model = V.Vector Bool
+type Model = VU.Vector Bool
 
 
-width  = 400 :: Int
-height = 300 :: Int
+width  = 500 :: Int
+height = 250 :: Int
 size   =   3 :: Float
 field  = initField width height size
 
 
 main :: IO ()
 main = do
-  cells <- V.replicateM (width * height) (randomIO :: IO Bool)
-  simulate window black 10 cells drawModel simCells
+  cells <- VU.replicateM (width * height) (randomIO :: IO Bool)
+  simulate window black 15 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
 drawModel :: Model -> Picture
-drawModel cells = Pictures $ V.toList $ V.imap drawCell cells
+drawModel cells = Pictures $ V.toList $ V.imap drawCell $ VU.convert cells
   where
     drawCell i cell = if cell
                       then Color cyan $ indexToDrawCell field i
                       else Blank
 
 simCells :: ViewPort -> Float -> Model -> Model
-simCells _ _ cells = V.imap check cells
+simCells _ _ cells = VU.imap check cells
   where
-    check i cell
-      | cell      = if (cellNum == 2 || cellNum == 3) then True else False
+    check i bool
+      | bool      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
         nbs i = snd $ (neighborhoodTable field) V.! i
-        cellNum = length $ filter id $ map (cells V.!) $ nbs i
-
-
--- cells = Vec.fromList [False,True,True,False,True,False,True,False,True,False,False,False,True,False,True,True,True,True,False,False,False,False,False,True,False,True,False,True,True,True,True,False,False,True,False,True,True,False,True,False,True,False,False,True,False,True,False,False,False,True,False,True,True,False,False,True,False,False,True,True,True,True,False,False,True,False,False,True,False,False,True,True,True,False,True,True,False,True,False,False,False,True,True,False,False,False,False,True,True,False,False,True,False,False,True,True,False,True,True,True,True,False,False,False,False,True,False,True,False,False,True,False,True,True,False,True,False,True,False,False,False,False,True,True,False,True,True,False,False,False,False,True,True,True,False,True,True,True,True,False,False,False,False,False,False,True,True,True,False,False,False,False,False,True,False,False,False,True,True,True,False,True,False,False,False,True,True,False,True,True,True,False,True,False,True,True,False,True,False,False,True,False,False,False,True,False,False,True,False,False,True,True,True,True,False,False,True,False,False,False,True,True,False,False,False,False,False,True,True,True,False,False,True,False,True,False,True,True,False,True,True,False,True,False,False,True,True,False,True,True,False,False,True,True,True,True,True,False,True,True,False,True,True,True,True,False,False,False,False,False,False,False,False,False,True,False,True,True,True,False,False,False,False,False,False,False,False,True,True,True,False,True,False,False,False,True,True,True,True,True,False,True,True,True,True,True,False,False,False,False,False,True,True,False,False,True,False,True,False,True]
+        cellNum = length $ filter id $ map (cells VU.!) $ nbs i
