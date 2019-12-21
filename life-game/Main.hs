@@ -20,7 +20,8 @@ field  = initField width height size
 
 main :: IO ()
 main = do
-  cells <- VU.replicateM (width * height) (randomIO :: IO Bool)
+  rand <- VU.replicateM (width * height) (randomRIO (0, 3) :: IO Int)
+  let cells = VU.map (\x -> if x == 0 then True else False) rand
   simulate window black 15 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
