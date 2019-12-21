@@ -9,8 +9,8 @@ type Index    = Int             -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
 data Field = Field { cellSize          :: Float
-                   , positionTable     :: V.Vector Position
-                   , pointTable        :: V.Vector Point
+                   , positionTable     :: VU.Vector Position
+                   , pointTable        :: VU.Vector Point
                    , neighborhoodTable :: V.Vector ([Index], [Index])
                    } deriving Show
 
@@ -23,12 +23,12 @@ data Field = Field { cellSize          :: Float
 -- | Field の初期化
 initField :: Int -> Int -> Float -> Field
 initField width height size =
-  Field { cellSize      = size
-        , positionTable = positionT
-        , pointTable    = V.map (posToPoint width height size) positionT
-        , neighborhoodTable = V.map (neighborhood width height) positionT
+  Field { cellSize          = size
+        , positionTable     = positionT
+        , pointTable        = VU.map (posToPoint width height size) positionT
+        , neighborhoodTable = V.map (neighborhood width height) $ VU.convert positionT
         }
-  where positionT = V.generate (width * height) (indexToPos width)
+  where positionT = VU.generate (width * height) (indexToPos width)
 
 -- | Window のサイズ
 windowSize :: Int -> Int -> Float -> (Int, Int)
@@ -65,7 +65,7 @@ posToPoint width height size (x, y) = (x', y')
 indexToDrawCell :: Field -> Index -> Picture
 indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
   where
-    (x0, y0) = (pointTable field) V.! i
+    (x0, y0) = (pointTable field) VU.! i
     (x1, y1) = (x0 + cellSize field - 1, y0 - cellSize field + 1)
 
 
@@ -74,7 +74,7 @@ indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
 -- * 近傍の計算
 -------------------------------------------------------------
 neighborhood :: Int -> Int -> Position -> ([Index], [Index])
-neighborhood width height pos = (neumann, moore')
+neighborhood width height pos = (neumann, moore' ++ neumann)
   where
     posList (x, y) lst = [(mod (x + a) width, mod (y + b) height) | (a, b) <- lst]
     neumann = map (posToIndex width) $ posList pos [(0, -1), (1, 0), (0,  1), (-1,  0)]

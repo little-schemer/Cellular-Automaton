@@ -2,6 +2,7 @@ module Main where
 
 import           Control.Monad
 import qualified Data.Vector                  as V
+import qualified Data.Vector.Unboxed          as VU
 import           Field
 import           Graphics.Gloss
 import           Graphics.Gloss.Data.ViewPort
@@ -20,7 +21,7 @@ field  = initField width height size
 main :: IO ()
 main = do
   cells <- V.replicateM (width * height) (randomIO :: IO Bool)
-  simulate window black 15 cells drawModel simCells
+  simulate window black 10 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
 drawModel :: Model -> Picture
@@ -37,7 +38,7 @@ simCells _ _ cells = V.imap check cells
       | cell      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
-        nbs i = let (a, b) = (neighborhoodTable field) V.! i in a ++ b
+        nbs i = snd $ (neighborhoodTable field) V.! i
         cellNum = length $ filter id $ map (cells V.!) $ nbs i
 
 
