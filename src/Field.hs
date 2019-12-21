@@ -1,18 +1,19 @@
 module Field where
 
-import Graphics.Gloss
-import qualified Data.Vector as Vec
--- import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector         as V
+import qualified Data.Vector.Unboxed as VU
+import           Graphics.Gloss
 
 
-type Index = Int                -- ^ Cell の Index
+type Index    = Int             -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
-data Field = Field { cellSize :: Float
-                   , positionTable :: Vec.Vector Position
-                   , pointTable :: Vec.Vector Point
-                   , neighborhoodTable :: Vec.Vector ([Index], [Index])
+data Field = Field { cellSize          :: Float
+                   , positionTable     :: V.Vector Position
+                   , pointTable        :: V.Vector Point
+                   , neighborhoodTable :: V.Vector ([Index], [Index])
                    } deriving Show
+
 
 
 -------------------------------------------------------------
@@ -21,20 +22,19 @@ data Field = Field { cellSize :: Float
 
 -- | Field の初期化
 initField :: Int -> Int -> Float -> Field
-initField width height size = Field { cellSize      = size
-                                    , positionTable = positionT
-                                    , pointTable    = pointT
-                                    , neighborhoodTable = neighborhoodT
-                                    }
-  where
-    positionT = Vec.generate (width * height) (indexToPos width)
-    pointT    = Vec.map (posToPoint width height size) positionT
-    neighborhoodT = Vec.map (neighborhood width height) positionT
+initField width height size =
+  Field { cellSize      = size
+        , positionTable = positionT
+        , pointTable    = V.map (posToPoint width height size) positionT
+        , neighborhoodTable = V.map (neighborhood width height) positionT
+        }
+  where positionT = V.generate (width * height) (indexToPos width)
 
 -- | Window のサイズ
 windowSize :: Int -> Int -> Float -> (Int, Int)
 windowSize width height size = (width * ics, height * ics)
   where ics = truncate size
+
 
 
 -------------------------------------------------------------
@@ -53,8 +53,9 @@ posToPoint :: Int -> Int -> Float -> Position -> Point
 posToPoint width height size (x, y) = (x', y')
   where
     [w, h, xx, yy] = map fromIntegral [width, height, x, y]
-    x' = (xx - (w - 1) / 2) * size
-    y' = ((h - 1) / 2 - yy) * size
+    x' = (xx - w / 2) * size
+    y' = (h / 2 - yy) * size
+
 
 
 -------------------------------------------------------------
@@ -62,10 +63,11 @@ posToPoint width height size (x, y) = (x', y')
 -------------------------------------------------------------
 -- | Cell の描画 : Index -> Cell
 indexToDrawCell :: Field -> Index -> Picture
-indexToDrawCell field i = Polygon [(x, y), (x + s, y), (x + s, y + s), (x, y + s)]
+indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
   where
-    (x, y) = (pointTable field) Vec.! i
-    s      = cellSize field - 1
+    (x0, y0) = (pointTable field) V.! i
+    (x1, y1) = (x0 + cellSize field - 1, y0 - cellSize field + 1)
+
 
 
 -------------------------------------------------------------
@@ -75,5 +77,5 @@ neighborhood :: Int -> Int -> Position -> ([Index], [Index])
 neighborhood width height pos = (neumann, moore')
   where
     posList (x, y) lst = [(mod (x + a) width, mod (y + b) height) | (a, b) <- lst]
-    neumann = map (posToIndex width) $ posList pos [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    neumann = map (posToIndex width) $ posList pos [(0, -1), (1, 0), (0,  1), (-1,  0)]
     moore'  = map (posToIndex width) $ posList pos [(1, -1), (1, 1), (-1, 1), (-1, -1)]
