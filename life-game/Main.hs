@@ -1,6 +1,5 @@
 module Main where
 
-import           Control.Monad
 import qualified Data.Vector                  as V
 import qualified Data.Vector.Unboxed          as VU
 import           Field
@@ -8,12 +7,10 @@ import           Graphics.Gloss
 import           Graphics.Gloss.Data.ViewPort
 import           System.Random
 
-
 type Model = V.Vector Bool
 
-
-width  = 400 :: Int
-height = 300 :: Int
+width  = 500 :: Int
+height = 250 :: Int
 size   =   3 :: Float
 field  = initField width height size
 
@@ -40,6 +37,3 @@ simCells _ _ cells = V.imap check cells
       where
         nbs i = snd $ (neighborhoodTable field) V.! i
         cellNum = length $ filter id $ map (cells V.!) $ nbs i
-
-
--- cells = Vec.fromList [False,True,True,False,True,False,True,False,True,False,False,False,True,False,True,True,True,True,False,False,False,False,False,True,False,True,False,True,True,True,True,False,False,True,False,True,True,False,True,False,True,False,False,True,False,True,False,False,False,True,False,True,True,False,False,True,False,False,True,True,True,True,False,False,True,False,False,True,False,False,True,True,True,False,True,True,False,True,False,False,False,True,True,False,False,False,False,True,True,False,False,True,False,False,True,True,False,True,True,True,True,False,False,False,False,True,False,True,False,False,True,False,True,True,False,True,False,True,False,False,False,False,True,True,False,True,True,False,False,False,False,True,True,True,False,True,True,True,True,False,False,False,False,False,False,True,True,True,False,False,False,False,False,True,False,False,False,True,True,True,False,True,False,False,False,True,True,False,True,True,True,False,True,False,True,True,False,True,False,False,True,False,False,False,True,False,False,True,False,False,True,True,True,True,False,False,True,False,False,False,True,True,False,False,False,False,False,True,True,True,False,False,True,False,True,False,True,True,False,True,True,False,True,False,False,True,True,False,True,True,False,False,True,True,True,True,True,False,True,True,False,True,True,True,True,False,False,False,False,False,False,False,False,False,True,False,True,True,True,False,False,False,False,False,False,False,False,True,True,True,False,True,False,False,False,True,True,True,True,True,False,True,True,True,True,True,False,False,False,False,False,True,True,False,False,True,False,True,False,True]
