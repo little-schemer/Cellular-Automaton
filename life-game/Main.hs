@@ -20,8 +20,7 @@ field  = initField width height size
 
 main :: IO ()
 main = do
-  rand <- VU.replicateM (width * height) (randomRIO (0, 3) :: IO Int)
-  let cells = VU.map (\x -> if x == 0 then True else False) rand
+  cells <- VU.replicateM (width * height) (randomIO :: IO Bool)
   simulate window black 15 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
@@ -39,5 +38,5 @@ simCells _ _ cells = VU.imap check cells
       | bool      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
-        nbs i = snd $ (neighborhoodTable field) V.! i
-        cellNum = length $ filter id $ map (cells VU.!) $ nbs i
+        (_, m) = (neighborhoodTable field) V.! i
+        cellNum = length $ filter id $ map (cells VU.!) m
