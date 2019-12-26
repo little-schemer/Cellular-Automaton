@@ -40,6 +40,7 @@ windowSize width height size = (width * ics, height * ics)
 -------------------------------------------------------------
 -- * 変換
 -------------------------------------------------------------
+
 -- | Index -> Position
 indexToPos :: Int -> Index -> Position
 indexToPos width i = let (y, x) = divMod i width in (x, y)
@@ -61,6 +62,7 @@ posToPoint width height size (x, y) = (x', y')
 -------------------------------------------------------------
 -- * 表示
 -------------------------------------------------------------
+
 -- | Cell の描画 : Index -> Cell
 indexToDrawCell :: Field -> Index -> Picture
 indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
@@ -71,10 +73,12 @@ indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
 
 
 -------------------------------------------------------------
--- * 近傍の計算
+-- * 近傍
 -------------------------------------------------------------
+
+-- | 近傍の位置のリスト
 neighborhood :: Int -> Int -> Position -> ([Index], [Index])
-neighborhood width height pos = (neumann, moore' ++ neumann)
+neighborhood width height pos = (neumann, neumann ++ moore')
   where
     posList (x, y) lst = [(mod (x + a) width, mod (y + b) height) | (a, b) <- lst]
     neumann = map (posToIndex width) $ posList pos [(0, -1), (1, 0), (0,  1), (-1,  0)]

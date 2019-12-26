@@ -1,5 +1,6 @@
 module Main where
 
+
 import qualified Data.Vector                  as V
 import qualified Data.Vector.Unboxed          as VU
 import           Field
@@ -37,5 +38,5 @@ simCells _ _ cells = VU.imap check cells
       | bool      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
-        nbs i = snd $ (neighborhoodTable field) V.! i
-        cellNum = length $ filter id $ map (cells VU.!) $ nbs i
+        (_, m) = (neighborhoodTable field) V.! i
+        cellNum = length $ filter id $ map (cells VU.!) m
