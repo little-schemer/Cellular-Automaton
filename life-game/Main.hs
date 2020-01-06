@@ -1,3 +1,14 @@
+-------------------------------------------------------------
+-- |
+--   Module      : Main
+--   Description : Life Game
+--   Copyright   : (c) little Haskeller, 2019
+--   License     : BSD3
+--
+--   Gloss を使った Life Game
+--
+-------------------------------------------------------------
+
 module Main where
 
 
@@ -14,11 +25,20 @@ import           System.Random
 type Model = VU.Vector Bool
 
 
-width  = 500 :: Int
-height = 250 :: Int
-size   =   3 :: Float
+-----------------------------------------
+-- * パラメータ
+-----------------------------------------
+
+width  = 500 :: Int             -- 横の Cell 数
+height = 250 :: Int             -- 縦の Cell 数
+size   =   3 :: Float           -- Cell のサイズ
 field  = initField width height size
 
+
+
+-----------------------------------------
+-- * Life-Game
+-----------------------------------------
 
 main :: IO ()
 main = do
@@ -29,6 +49,7 @@ main = do
   simulate window black 15 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
 
+-- | Cell の初期化
 initCells :: FilePath -> IO Model
 initCells path = do
   (pos : text) <- lines <$> readFile path
@@ -38,7 +59,7 @@ initCells path = do
       h is (j, cs) = [(posToIndex width (i, j), conv c) | (i, c) <- zip is cs]
       conv c = if c == '#' then True else False
 
-
+-- | モデルを図形に変換する関数
 drawModel :: Model -> Picture
 drawModel cells = Pictures $ V.toList $ V.imap drawCell $ VU.convert cells
   where
@@ -46,6 +67,7 @@ drawModel cells = Pictures $ V.toList $ V.imap drawCell $ VU.convert cells
                       then Color cyan $ indexToDrawCell field i
                       else Blank
 
+-- | モデルを更新する関数
 simCells :: ViewPort -> Float -> Model -> Model
 simCells _ _ cells = VU.imap check cells
   where
