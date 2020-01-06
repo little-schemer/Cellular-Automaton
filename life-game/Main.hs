@@ -1,11 +1,13 @@
 module Main where
 
 
+import           Control.Applicative
 import qualified Data.Vector                  as V
 import qualified Data.Vector.Unboxed          as VU
 import           Field
 import           Graphics.Gloss
 import           Graphics.Gloss.Data.ViewPort
+import           System.Environment
 import           System.Random
 
 
@@ -20,9 +22,22 @@ field  = initField width height size
 
 main :: IO ()
 main = do
-  cells <- VU.replicateM (width * height) (randomIO :: IO Bool)
+  args <- getArgs
+  cells <- if null args
+           then VU.replicateM (width * height) (randomIO :: IO Bool)
+           else initCells $ head args
   simulate window black 15 cells drawModel simCells
     where window = InWindow "Life Game" (windowSize width height size) (0, 0)
+
+initCells :: FilePath -> IO Model
+initCells path = do
+  (pos : text) <- lines <$> readFile path
+  return ((VU.replicate (width * height) False) VU.// (g (read pos) text))
+    where
+      g (x, y) css = concatMap (h [x ..]) $ zip [y ..] css
+      h is (j, cs) = [(posToIndex width (i, j), conv c) | (i, c) <- zip is cs]
+      conv c = if c == '#' then True else False
+
 
 drawModel :: Model -> Picture
 drawModel cells = Pictures $ V.toList $ V.imap drawCell $ VU.convert cells

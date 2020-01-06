@@ -76,10 +76,10 @@ indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
 -- * 近傍
 -------------------------------------------------------------
 
--- | 近傍の位置のリスト
+-- | 近傍のインデックスのリスト
 neighborhood :: Int -> Int -> Position -> ([Index], [Index])
-neighborhood width height pos = (neumann, neumann ++ moore')
+neighborhood width height (x, y) = (neumann, neumann ++ moore')
   where
-    posList (x, y) lst = [(mod (x + a) width, mod (y + b) height) | (a, b) <- lst]
-    neumann = map (posToIndex width) $ posList pos [(0, -1), (1, 0), (0,  1), (-1,  0)]
-    moore'  = map (posToIndex width) $ posList pos [(1, -1), (1, 1), (-1, 1), (-1, -1)]
+    f (a, b) = posToIndex width $ (mod (x + a) width, mod (y + b) height)
+    neumann = map f [(0, -1), (1, 0), (0,  1), (-1,  0)]
+    moore'  = map f [(1, -1), (1, 1), (-1, 1), (-1, -1)]
