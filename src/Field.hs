@@ -89,8 +89,8 @@ indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
 
 -- | 近傍のインデックスのリスト
 neighborhood :: Int -> Int -> Position -> ([Index], [Index])
-neighborhood width height (x, y) = (neumann, neumann ++ moore')
+neighborhood width height (x, y) = (neumann, moore)
   where
     f (a, b) = posToIndex width $ (mod (x + a) width, mod (y + b) height)
     neumann = map f [(0, -1), (1, 0), (0,  1), (-1,  0)]
-    moore'  = map f [(1, -1), (1, 1), (-1, 1), (-1, -1)]
+    moore   = (map f [(1, -1), (1, 1), (-1, 1), (-1, -1)]) ++ neumann

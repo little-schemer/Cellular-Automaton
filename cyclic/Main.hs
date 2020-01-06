@@ -9,44 +9,42 @@
 module Main where
 
 
-import qualified Data.Vector as Vec
-import System.Random
-import Control.Monad
-import System.Environment
-import Graphics.Gloss
-import Graphics.Gloss.Data.ViewPort
-import Field
+import           Control.Applicative
+import qualified Data.Vector                  as V
+import qualified Data.Vector.Unboxed          as VU
+import           Field
+import           Graphics.Gloss
+import           Graphics.Gloss.Data.ViewPort
+import           System.Environment
+import           System.Random
 
 
-type Vec   = Vec.Vector
-type Cells = Vec Int
+type Model = (VU.Vector Int, Int, [Color])
 
 
-state  =  10 :: Int
-width  = 200 :: Int
-height = 150 :: Int
-cells  =   5 :: Float
+width  = 300 :: Int
+height = 200 :: Int
+size   =   4 :: Float
+state  =  15 :: Int
+field  = initField width height size
 
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let (st, nb) = cmd args
-  cells <- replicateM (width * height) (randomRIO (0, st))
-  simulate window black 20
-    (Vec.fromList cells) (draw field (colors st)) (simCells field st nb)
-    where
-      field = initField width height cells
-      window = InWindow "Cyclic" (windowSize field) (0, 0)
+  cells <- VU.replicateM (width * height) (randomRIO (0, state))
+  simulate window black 15 (cells, state, colors state) drawModel simModel
+    where window = InWindow "Cyclic" (windowSize width height size) (0, 0)
 
-cmd :: [String] -> (Int, Field -> Position -> [Position])
-cmd args = loop args (state, vonNeumannN)
-  where
-    loop [] opt = opt
-    loop ("-s" : s : args') (_ , nb) = loop args' (read s, nb)
-    loop ("-n" : "n" : args') (st, _) = loop args' (st, vonNeumannN)
-    loop ("-n" : "m" : args') (st, _) = loop args' (st, mooreN)
-    loop (_ : _ : args') (st, nb) = loop args' (st, nb)
+
+-- cmd :: [String] -> (Int, Int)
+-- cmd args = loop args (state, fst)
+--   where
+--     loop [] opt                       = opt
+--     loop ("-s" : s : args') (_, nb)   = loop args' (read s, nb)
+--     loop ("-n" : "n" : args') (st, _) = loop args' (st, fst)
+--     loop ("-n" : "m" : args') (st, _) = loop args' (st, snd)
+--     loop (_ : args') (st, nb)         = loop args' (st, nb)
+
 
 colors :: Int -> [Color]
 colors st = [makeColorI r g 150 a | (r, g, a) <- zip3 rLst gLst aLst]
@@ -55,15 +53,17 @@ colors st = [makeColorI r g 150 a | (r, g, a) <- zip3 rLst gLst aLst]
     gLst = [255, 255 - (div 255 st) .. 0]
     aLst = cycle [100, 200, 150, 250]
 
-draw :: Field -> [Color] -> Cells -> Picture
-draw field clrs cells = Pictures $ Vec.toList $ Vec.imap drawCell cells
+
+drawModel :: Model -> Picture
+drawModel (cells, st, clrs) = Pictures $ V.toList $ V.imap drawCell $ VU.convert cells
   where drawCell i cell = Color (clrs !! cell) $ indexToDrawCell field i
 
-simCells :: Field -> Int -> (Field -> Position -> [Position])
-         -> ViewPort -> Float -> Cells -> Cells
-simCells field st nb _ _ cells = Vec.imap check cells
+
+simModel :: ViewPort -> Float -> Model -> Model
+simModel _ _ (cells, st, clrs) = (VU.imap check cells, st, clrs)
   where
-    check i c = if (elem (mod (c + 1) st) lst) then (mod (c + 1) st) else c
+    check i c = if elem c' clrList then c' else c
       where
-        f (x, y) = cells Vec.! (posToIndex field (x, y))
-        lst = [f (x, y) | (x, y) <- nb field (indexToPos field i)]
+        c' = mod (c + 1) st
+        posList = fst $ (neighborhoodTable field) V.! i
+        clrList = map (cells VU.!) posList
