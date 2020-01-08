@@ -20,7 +20,7 @@ type Index    = Int             -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
 data Field = Field { cellSize          :: Float
-                   , positionTable     :: VU.Vector Position
+                   -- , positionTable     :: VU.Vector Position
                    , pointTable        :: VU.Vector Point
                    , neighborhoodTable :: V.Vector ([Index], [Index])
                    } deriving Show
@@ -35,7 +35,7 @@ data Field = Field { cellSize          :: Float
 initField :: Int -> Int -> Float -> Field
 initField width height size =
   Field { cellSize          = size
-        , positionTable     = positionT
+        -- , positionTable     = positionT
         , pointTable        = VU.map (posToPoint width height size) positionT
         , neighborhoodTable = V.map (neighborhood width height) $ VU.convert positionT
         }

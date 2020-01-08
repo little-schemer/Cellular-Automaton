@@ -1,29 +1,26 @@
 module Main where
 
-import qualified Data.Vector as V
-import qualified Data.Vector.Mutable as M
-import Data.Maybe
-import System.Random
-import Control.Monad
-import Graphics.Gloss
-import Graphics.Gloss.Data.ViewPort
-import Field
+import           Control.Monad
+import           Data.Maybe
+import qualified Data.Vector                  as V
+import qualified Data.Vector.Mutable          as M
+import           Field
+import           Graphics.Gloss
+import           Graphics.Gloss.Data.ViewPort
+import           System.Random
 
 
-type Vec    = V.Vector
-type State  = Int
-type Motion = Int
-
-data Model = Model { cells   :: Vec Color
+data Model = Model { cells   :: VU.Vector Color
                    , antHead :: Int
                    , antPos  :: Position
                    , antSt   :: Int
                    , rule    :: [((Color, State), (Color, Motion, State))]
                    } deriving Show
 
-width    = 200 :: Int
-height   = 150 :: Int
-cellSize =   5 :: Float
+width  = 300 :: Int
+height = 200 :: Int
+size   =   4 :: Float
+field  = initField width height size
 
 toRight  =  1 :: Int
 toLeft   = -1 :: Int
@@ -37,19 +34,18 @@ toFoward =  0 :: Int
 --
 
 main :: IO ()
-main = simulate window black 60 model (drawModel field) (simAnt field)
+main = simulate window black 15 model drawModel simAnt
   where
-    field  = initField width height cellSize
     window = InWindow "Langton's Ant" (windowSize field) (0, 0)
-    model  = Model { cells = V.replicate (width * height) black
+    model  = Model { cells   = VU.replicate (width * height) black
                    , antHead = 0
                    , antPos  = (div width 2, div height 2)
                    , antSt   = 0
-                   , rule    = [((black, 0), (red,  toLeft, 0))
+                   , rule    = [((black, 0), (red,   toLeft,  0))
                                ,((red  , 0), (black, toRight, 0))] }
 
-drawModel :: Field -> Model -> Picture
-drawModel fd md = Pictures [cellPic, ant]
+drawModel :: Model -> Picture
+drawModel md = Pictures [cellPic, ant]
   where
     cellPic = Pictures $ V.toList $ V.imap drawCell (cells md)
     ant = Color cyan $ posToDrawCell fd (antPos md)
