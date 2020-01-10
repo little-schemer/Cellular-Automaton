@@ -75,9 +75,10 @@ posToPoint width height size (x, y) = (x', y')
 -----------------------------------------
 
 -- | Cell の描画 : Index -> Cell
-indexToDrawCell :: Field -> Index -> Picture
-indexToDrawCell field i = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+indexToDrawCell :: Field -> Index -> Color -> Picture
+indexToDrawCell field i col = Color col pic
   where
+    pic = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
     (x0, y0) = (pointTable field) VU.! i
     (x1, y1) = (x0 + cellSize field - 1, y0 - cellSize field + 1)
 
