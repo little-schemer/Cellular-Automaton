@@ -89,9 +89,14 @@ indexToDrawCell field i col = Color col pic
 -----------------------------------------
 
 -- | 近傍のインデックスのリスト
+--
+-- 7 0 4
+-- 3 x 1
+-- 6 2 5
+--
 neighborhood :: Int -> Int -> Position -> ([Index], [Index])
 neighborhood width height (x, y) = (neumann, moore)
   where
     f (a, b) = posToIndex width $ (mod (x + a) width, mod (y + b) height)
     neumann = map f [(0, -1), (1, 0), (0,  1), (-1,  0)]
-    moore   = (map f [(1, -1), (1, 1), (-1, 1), (-1, -1)]) ++ neumann
+    moore   = neumann ++ (map f [(1, -1), (1, 1), (-1, 1), (-1, -1)])

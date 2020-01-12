@@ -3,21 +3,19 @@ module Main where
 import           Control.Monad
 import           Data.Maybe
 import qualified Data.Vector                  as V
-import qualified Data.Vector.Mutable          as M
 import qualified Data.Vector.Unboxed          as VU
 import           Field
 import           Graphics.Gloss
 import           Graphics.Gloss.Data.ViewPort
-import           System.Random
 
 
-type State = Int
+type State  = Int
 type Motion = Int
 
-data Model = Model { cells   :: VU.Vector Color
+data Model = Model { cells   :: V.Vector Color
                    , antHead :: Int
                    , antPos  :: Position
-                   , antSt   :: Int
+                   , antSt   :: State
                    , rule    :: [((Color, State), (Color, Motion, State))]
                    } -- deriving Show
 
@@ -38,10 +36,10 @@ toFoward =  0 :: Int
 --
 
 main :: IO ()
-main = simulate window black 15 model drawModel simAnt
+main = simulate window black 30 model drawModel simAnt
   where
-    window = InWindow "Langton's Ant" (windowSize field) (0, 0)
-    model  = Model { cells   = VU.replicate (width * height) black
+    window = InWindow "Langton's Ant" (windowSize width height size) (0, 0)
+    model  = Model { cells   = V.replicate (width * height) black
                    , antHead = 0
                    , antPos  = (div width 2, div height 2)
                    , antSt   = 0
@@ -51,18 +49,18 @@ main = simulate window black 15 model drawModel simAnt
 drawModel :: Model -> Picture
 drawModel md = Pictures [cellPic, ant]
   where
-    cellPic = Pictures $ V.toList $ V.imap drawCell $ VU.convert (cells md)
-    ant = indexToDrawCell field (posToIndex window $ antPos model) cyan
+    cellPic = Pictures $ V.toList $ V.imap drawCell (cells md)
+    ant = indexToDrawCell field (posToIndex width $ antPos md) cyan
     drawCell i cell = if (cell /= black)
-                      then indexToDrawCell fd i cell
+                      then indexToDrawCell field i cell
                       else Blank
 
 simAnt :: ViewPort -> Float -> Model -> Model
 simAnt _ _ md = md { cells = cells', antHead = antHead', antPos = antPos' }
   where
-    antIdx = posToIndex field $ antPos md
-    (color, move, state) = fromJust $ lookup (cellColor, antSt md) (rule md)
+    antIdx = posToIndex width $ antPos md
+    (clr, move, state) = fromJust $ lookup (cellColor, antSt md) (rule md)
       where cellColor = (cells md) V.! antIdx
-    cells' = VU.modify (\v -> M.write v antIdx color) (cells md)
+    cells' = (cells md) V.// [(antIdx, clr)]
     antHead' = mod (antHead md + move) 4
-    antPos' = (vonNeumannN fd $ antPos md) !! antHead'
+    antPos' = indexToPos width $ (fst ((neighborhoodTable field) V.! antIdx)) !! antHead'
