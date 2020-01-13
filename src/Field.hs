@@ -11,8 +11,7 @@
 
 module Field where
 
-import qualified Data.Vector         as V
-import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector    as V
 import           Graphics.Gloss
 
 
@@ -20,8 +19,7 @@ type Index    = Int             -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
 data Field = Field { cellSize          :: Float
-                   -- , positionTable     :: VU.Vector Position
-                   , pointTable        :: VU.Vector Point
+                   , pointTable        :: V.Vector Point
                    , neighborhoodTable :: V.Vector [Index]
                    } deriving Show
 
@@ -35,11 +33,10 @@ data Field = Field { cellSize          :: Float
 initField :: Int -> Int -> Float -> (Int -> Int -> Position -> [Index]) -> Field
 initField width height size nbFunc =
   Field { cellSize          = size
-        -- , positionTable     = positionT
-        , pointTable        = VU.map (posToPoint width height size) positionT
-        , neighborhoodTable = V.map (nbFunc width height) $ VU.convert positionT
+        , pointTable        = V.map (posToPoint width height size) positionT
+        , neighborhoodTable = V.map (nbFunc width height) positionT
         }
-  where positionT = VU.generate (width * height) (indexToPos width)
+  where positionT = V.generate (width * height) (indexToPos width)
 
 -- | Window のサイズ
 windowSize :: Int -> Int -> Float -> (Int, Int)
@@ -79,7 +76,7 @@ indexToDrawCell :: Field -> Index -> Color -> Picture
 indexToDrawCell field i col = Color col pic
   where
     pic = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
-    (x0, y0) = (pointTable field) VU.! i
+    (x0, y0) = (pointTable field) V.! i
     (x1, y1) = (x0 + cellSize field - 1, y0 - cellSize field + 1)
 
 
