@@ -32,7 +32,7 @@ type Model = VU.Vector Bool
 width  = 500 :: Int             -- 横の Cell 数
 height = 250 :: Int             -- 縦の Cell 数
 size   =   3 :: Float           -- Cell のサイズ
-field  = initField width height size
+field  = initField width height size moore
 
 
 
@@ -72,5 +72,5 @@ simCells _ _ cells = VU.imap check cells
       | bool      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
-        (_, m) = (neighborhoodTable field) V.! i
+        m = (neighborhoodTable field) V.! i
         cellNum = length $ filter id $ map (cells VU.!) m

@@ -22,7 +22,7 @@ type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 data Field = Field { cellSize          :: Float
                    -- , positionTable     :: VU.Vector Position
                    , pointTable        :: VU.Vector Point
-                   , neighborhoodTable :: V.Vector ([Index], [Index])
+                   , neighborhoodTable :: V.Vector [Index]
                    } deriving Show
 
 
@@ -32,12 +32,12 @@ data Field = Field { cellSize          :: Float
 -----------------------------------------
 
 -- | Field の初期化
-initField :: Int -> Int -> Float -> Field
-initField width height size =
+initField :: Int -> Int -> Float -> (Int -> Int -> Position -> [Index]) -> Field
+initField width height size nbFunc =
   Field { cellSize          = size
         -- , positionTable     = positionT
         , pointTable        = VU.map (posToPoint width height size) positionT
-        , neighborhoodTable = V.map (neighborhood width height) $ VU.convert positionT
+        , neighborhoodTable = V.map (nbFunc width height) $ VU.convert positionT
         }
   where positionT = VU.generate (width * height) (indexToPos width)
 
@@ -85,18 +85,31 @@ indexToDrawCell field i col = Color col pic
 
 
 -----------------------------------------
--- * 近傍
+-- * 近傍のインデックスのリスト
 -----------------------------------------
 
--- | 近傍のインデックスのリスト
+-- | Von Neumann 近傍
 --
--- 7 0 4
+--   0
 -- 3 x 1
--- 6 2 5
+--   2
 --
-neighborhood :: Int -> Int -> Position -> ([Index], [Index])
-neighborhood width height (x, y) = (neumann, moore)
-  where
-    f (a, b) = posToIndex width $ (mod (x + a) width, mod (y + b) height)
-    neumann = map f [(0, -1), (1, 0), (0,  1), (-1,  0)]
-    moore   = neumann ++ (map f [(1, -1), (1, 1), (-1, 1), (-1, -1)])
+neumann :: Int -> Int -> Position -> [Index]
+neumann width height (x, y) = neighborhood width height (x, y) lst
+  where lst = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+
+-- | Moore 近傍
+--
+-- 7 0 1
+-- 6 x 2
+-- 5 4 3
+--
+moore :: Int -> Int -> Position -> [Index]
+moore width height (x, y) = neighborhood width height (x, y) lst
+  where lst = [ (0, -1), (1, -1), (1, 0), (1, 1)
+              , (0, 1), (-1, 1), (-1, 0), (-1, -1) ]
+
+-- | 近傍の計算
+neighborhood :: Int -> Int -> Position -> [(Int, Int)] -> [Index]
+neighborhood width height (x, y) lst = map f lst
+  where f (a, b) = posToIndex width $ (mod (x + a) width, mod (y + b) height)
