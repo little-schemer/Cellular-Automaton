@@ -61,7 +61,7 @@ initCells path = do
 
 -- | モデルを図形に変換する関数
 drawModel :: Model -> Picture
-drawModel cells = Pictures $ V.toList $ V.imap drawCell $ VU.convert cells
+drawModel cells = Pictures $ V.toList $ V.imap drawCell $ V.convert cells
   where drawCell i cell = if cell then indexToDrawCell field i cyan else Blank
 
 -- | モデルを更新する関数

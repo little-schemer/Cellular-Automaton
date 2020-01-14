@@ -43,7 +43,7 @@ initField width height size nbFunc =
         }
   where
     posTable    = V.generate (width * height) (indexToPos' width)
-    pointTable' = VU.map (posToPoint' width height size) $ VU.convert posTable
+    pointTable' = VU.map (posToPoint' width height size) $ V.convert posTable
 
 -- | Window のサイズ
 windowSize :: Int -> Int -> Float -> (Int, Int)
