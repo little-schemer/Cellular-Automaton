@@ -18,7 +18,9 @@ import           Graphics.Gloss
 type Index    = Int             -- ^ Cell の Index
 type Position = (Int, Int)      -- ^ Field 内の Cell の位置
 
-data Field = Field { cellSize          :: Float
+data Field = Field { fieldWidth        :: Int
+                   , fieldHeight       :: Int
+                   , cellSize          :: Float
                    , pointTable        :: V.Vector Point
                    , neighborhoodTable :: V.Vector [Index]
                    } deriving Show
@@ -32,11 +34,13 @@ data Field = Field { cellSize          :: Float
 -- | Field の初期化
 initField :: Int -> Int -> Float -> (Int -> Int -> Position -> [Index]) -> Field
 initField width height size nbFunc =
-  Field { cellSize          = size
-        , pointTable        = V.map (posToPoint width height size) positionT
-        , neighborhoodTable = V.map (nbFunc width height) positionT
+  Field { fieldWidth  = width
+        , fieldHeight = height
+        , cellSize    = size
+        , pointTable        = V.map (posToPoint' width height size) posTable
+        , neighborhoodTable = V.map (nbFunc width height) posTable
         }
-  where positionT = V.generate (width * height) (indexToPos width)
+  where posTable           = V.generate (width * height) (indexToPos' width)
 
 -- | Window のサイズ
 windowSize :: Int -> Int -> Float -> (Int, Int)
@@ -50,16 +54,26 @@ windowSize width height size = (width * ics, height * ics)
 -----------------------------------------
 
 -- | Index -> Position
-indexToPos :: Int -> Index -> Position
-indexToPos width i = let (y, x) = divMod i width in (x, y)
+indexToPos :: Field -> Index -> Position
+indexToPos fd i = indexToPos' (fieldWidth fd) i
+
+indexToPos' :: Int -> Index -> Position
+indexToPos' width i = let (y, x) = divMod i width in (x, y)
 
 -- | Position -> Index
-posToIndex :: Int -> Position -> Index
-posToIndex width (x, y) = x + y * width
+posToIndex :: Field -> Position -> Index
+posToIndex fd (x, y) = posToIndex' (fieldWidth fd) (x, y)
+
+posToIndex' :: Int -> Position -> Index
+posToIndex' width (x, y) = x + y * width
 
 -- | Position -> Point
-posToPoint :: Int -> Int -> Float -> Position -> Point
-posToPoint width height size (x, y) = (x', y')
+posToPoint :: Field -> Position -> Point
+posToPoint fd (x, y) = posToPoint' width height size (x, y)
+  where (width, height, size) = (fieldWidth fd, fieldHeight fd, cellSize fd)
+
+posToPoint' :: Int -> Int -> Float -> Position -> Point
+posToPoint' width height size (x, y) = (x', y')
   where
     [w, h, xx, yy] = map fromIntegral [width, height, x, y]
     x' = (xx - w / 2) * size
@@ -109,4 +123,4 @@ moore width height (x, y) = neighborhood width height (x, y) lst
 -- | 近傍の計算
 neighborhood :: Int -> Int -> Position -> [(Int, Int)] -> [Index]
 neighborhood width height (x, y) lst = map f lst
-  where f (a, b) = posToIndex width $ (mod (x + a) width, mod (y + b) height)
+  where f (a, b) = posToIndex' width $ (mod (x + a) width, mod (y + b) height)

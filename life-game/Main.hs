@@ -56,7 +56,7 @@ initCells path = do
   return ((VU.replicate (width * height) False) VU.// (g (read pos) text))
     where
       g (x, y) css = concatMap (h [x ..]) $ zip [y ..] css
-      h is (j, cs) = [(posToIndex width (i, j), conv c) | (i, c) <- zip is cs]
+      h is (j, cs) = [(posToIndex field (i, j), conv c) | (i, c) <- zip is cs]
       conv c = if c == '#' then True else False
 
 -- | モデルを図形に変換する関数
