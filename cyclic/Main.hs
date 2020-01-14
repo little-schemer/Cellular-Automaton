@@ -25,8 +25,8 @@ type Model = (VU.Vector Int, Int, [Color])
 width  = 300 :: Int
 height = 200 :: Int
 size   =   4 :: Float
-state  =  15 :: Int
-field  = initField width height size
+state  =  16 :: Int
+field  = initField width height size neumann
 
 
 main :: IO ()
@@ -65,5 +65,5 @@ simModel _ _ (cells, st, clrs) = (VU.imap check cells, st, clrs)
     check i c = if elem c' clrList then c' else c
       where
         c' = mod (c + 1) st
-        posList = fst $ (neighborhoodTable field) V.! i
+        posList = (neighborhoodTable field) V.! i
         clrList = map (cells VU.!) posList
