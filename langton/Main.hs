@@ -22,7 +22,7 @@ data Model = Model { cells   :: V.Vector Color
 width  = 300 :: Int
 height = 200 :: Int
 size   =   4 :: Float
-field  = initField width height size
+field  = initField width height size neumann
 
 toRight  =  1 :: Int
 toLeft   = -1 :: Int
@@ -40,7 +40,7 @@ main = simulate window black 30 model drawModel simAnt
   where
     window = InWindow "Langton's Ant" (windowSize width height size) (0, 0)
     model  = Model { cells   = V.replicate (width * height) black
-                   , antHead = 0
+                   , antHead = 1
                    , antPos  = (div width 2, div height 2)
                    , antSt   = 0
                    , rule    = [((black, 0), (red,   toLeft,  0))
@@ -50,7 +50,7 @@ drawModel :: Model -> Picture
 drawModel md = Pictures [cellPic, ant]
   where
     cellPic = Pictures $ V.toList $ V.imap drawCell (cells md)
-    ant = indexToDrawCell field (posToIndex width $ antPos md) cyan
+    ant = indexToDrawCell field (posToIndex field $ antPos md) cyan
     drawCell i cell = if (cell /= black)
                       then indexToDrawCell field i cell
                       else Blank
@@ -58,9 +58,9 @@ drawModel md = Pictures [cellPic, ant]
 simAnt :: ViewPort -> Float -> Model -> Model
 simAnt _ _ md = md { cells = cells', antHead = antHead', antPos = antPos' }
   where
-    antIdx = posToIndex width $ antPos md
+    antIdx = posToIndex field $ antPos md
     (clr, move, state) = fromJust $ lookup (cellColor, antSt md) (rule md)
       where cellColor = (cells md) V.! antIdx
     cells' = (cells md) V.// [(antIdx, clr)]
     antHead' = mod (antHead md + move) 4
-    antPos' = indexToPos width $ (fst ((neighborhoodTable field) V.! antIdx)) !! antHead'
+    antPos' = indexToPos field $ ((neighborhoodTable field) V.! antIdx) !! antHead'
