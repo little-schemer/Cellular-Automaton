@@ -46,8 +46,8 @@ main = do
   cells <- if null args
            then VU.replicateM (width * height) (randomIO :: IO Bool)
            else initCells $ head args
-  simulate window black 15 cells drawModel simCells
-    where window = InWindow "Life Game" (windowSize width height size) (0, 0)
+  simulate window black 30 cells drawModel simCells
+    where window = InWindow "Life Game" (windowSize field) (0, 0)
 
 -- | Cell の初期化
 initCells :: FilePath -> IO Model
@@ -72,5 +72,5 @@ simCells _ _ cells = VU.imap check cells
       | bool      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
-        m = (neighborhoodTable field) V.! i
+        m = (neighborTbl field) V.! i
         cellNum = length $ filter id $ map (cells VU.!) m
