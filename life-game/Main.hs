@@ -31,9 +31,10 @@ type Model = VU.Vector Bool
 -- * パラメータ
 ---------------------------------------------------
 
-width  = 300 :: Int             -- 横の Cell 数
-height = 200 :: Int             -- 縦の Cell 数
-size   =   3 :: Float           -- Cell のサイズ
+width  = 300 :: Int   -- ^ 横の Cell 数
+height = 200 :: Int   -- ^ 縦の Cell 数
+size   =   4 :: Float -- ^ Cell のサイズ
+speed  =  15 :: Int   -- ^ 描画スピード
 
 
 ---------------------------------------------------
@@ -41,43 +42,46 @@ size   =   3 :: Float           -- Cell のサイズ
 ---------------------------------------------------
 
 data Option = Option
-    { patternFile :: String
-    , widthF      :: Int
-    , heightF     :: Int
-    , speed       :: Int
+    { file :: String
+    , w    :: Int
+    , h    :: Int
+    , s    :: Int
     }
 
-options :: Parser Option
-options = Option
+opt :: Parser Option
+opt = Option
   <$> strOption   (short 'f' <> value "")
   <*> option auto (short 'w' <> value width)
   <*> option auto (short 'h' <> value height)
-  <*> option auto (short 's' <> value 15)
+  <*> option auto (short 's' <> value speed)
 
 
------------------------------------------
--- * Life-Game
------------------------------------------
+---------------------------------------------------
+-- * Life Game
+---------------------------------------------------
 
 main :: IO ()
 main = do
-  Option f w h s <- execParser (info options mempty)
+  Option file w h s <- execParser (info opt mempty)
   let fd = initField w h size moore
-  cells <- if null f
-           then VU.replicateM (w * h) (randomIO :: IO Bool)
-           else initCells fd f
+  cells <- initCells fd file
   simulate (window fd) black s cells (drawModel fd) (simCells fd)
     where window fd = InWindow "Life Game" (windowSize fd) (0, 0)
 
 -- | Cell の初期化
 initCells :: Field -> FilePath -> IO Model
-initCells fd path = do
+initCells fd path = if null path
+                    then VU.replicateM (w * h) randomIO
+                    else do
   (pos : text) <- lines <$> readFile path
-  return ((VU.replicate (fieldWidth fd * fieldHeight fd) False) VU.// (g (read pos) text))
+  return ((VU.replicate (w * h) False) VU.// lst pos)
     where
-      g (x, y) css = concatMap (h [x ..]) $ zip [y ..] css
-      h is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
+      (w, h) = (fieldWidth fd, fieldHeight fd)
+      lst pos = let (x, y) = read pos in concatMap (f [x ..]) $ zip [y ..] text
+      f is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
       conv c = if c == '#' then True else False
+
+
 
 -- | モデルを図形に変換する関数
 drawModel :: Field -> Model -> Picture
