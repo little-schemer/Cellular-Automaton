@@ -12,8 +12,6 @@
 module Main where
 
 
-import           Control.Applicative
-import           Data.Semigroup               ((<>))
 import qualified Data.Vector                  as V
 import qualified Data.Vector.Unboxed          as VU
 import           Field
@@ -23,7 +21,7 @@ import           Options.Applicative
 import           System.Random
 
 
-type Model = VU.Vector Bool
+type Model = VU.Vector Int
 
 
 ---------------------------------------------------
@@ -70,28 +68,30 @@ main = do
 -- | Cell の初期化
 initCells :: Field -> FilePath -> IO Model
 initCells fd path = if null path
-                    then VU.replicateM (w * h) randomIO
+                    then VU.replicateM (w * h) (randomRIO (0, 1))
                     else do
   (pos : txt) <- lines <$> readFile path
-  return ((VU.replicate (w * h) False) VU.// (lst (read pos) txt))
+  return ((VU.replicate (w * h) 0) VU.// (lst (read pos) txt))
     where
       (w, h) = (fieldWidth fd, fieldHeight fd)
       lst (x, y) txt = concatMap (f [x ..]) $ zip [y ..] txt
       f is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
-      conv c = if c == '#' then True else False
+      conv c = if c == '#' then 1 else 0
 
 -- | モデルを図形に変換する関数
 drawModel :: Field -> Model -> Picture
 drawModel fd cells = Pictures $ V.toList $ V.imap drawCell $ V.convert cells
-  where drawCell i cell = if cell then indexToDrawCell fd i cyan else Blank
+  where drawCell i cell = if (cell == 1)
+          then indexToDrawCell fd i cyan
+          else Blank
 
 -- | モデルを更新する関数
 simCells :: Field -> ViewPort -> Float -> Model -> Model
 simCells fd _ _ cells = VU.imap check cells
   where
-    check i bool
-      | bool      = if (cellNum == 2 || cellNum == 3) then True else False
-      | otherwise = if (cellNum == 3)                 then True else False
+    check i v
+      | v == 1    = if (cellNum == 2 || cellNum == 3) then 1 else 0
+      | otherwise = if (cellNum == 3)                 then 1 else 0
       where
         neighborLst = (neighborTbl fd) V.! i
-        cellNum     = sum [if cells VU.! j then 1 else 0 | j <- neighborLst]
+        cellNum     = sum [cells VU.! i | i <- neighborLst]
