@@ -20,7 +20,6 @@ import           Field
 import           Graphics.Gloss
 import           Graphics.Gloss.Data.ViewPort
 import           Options.Applicative
-import           System.Environment
 import           System.Random
 
 
@@ -33,7 +32,7 @@ type Model = VU.Vector Bool
 
 width  = 300 :: Int   -- ^ 横の Cell 数
 height = 200 :: Int   -- ^ 縦の Cell 数
-size   =   4 :: Float -- ^ Cell のサイズ
+size   =   3 :: Float -- ^ Cell のサイズ
 speed  =  15 :: Int   -- ^ 描画スピード
 
 
@@ -43,9 +42,9 @@ speed  =  15 :: Int   -- ^ 描画スピード
 
 data Option = Option
     { file :: String
-    , w    :: Int
-    , h    :: Int
-    , s    :: Int
+    , fw   :: Int
+    , fh   :: Int
+    , sd   :: Int
     }
 
 opt :: Parser Option
@@ -62,9 +61,9 @@ opt = Option
 
 main :: IO ()
 main = do
-  Option file w h s <- execParser (info opt mempty)
+  Option fn w h s <- execParser (info opt mempty)
   let fd = initField w h size moore
-  cells <- initCells fd file
+  cells <- initCells fd fn
   simulate (window fd) black s cells (drawModel fd) (simCells fd)
     where window fd = InWindow "Life Game" (windowSize fd) (0, 0)
 
@@ -73,15 +72,13 @@ initCells :: Field -> FilePath -> IO Model
 initCells fd path = if null path
                     then VU.replicateM (w * h) randomIO
                     else do
-  (pos : text) <- lines <$> readFile path
-  return ((VU.replicate (w * h) False) VU.// lst pos)
+  (pos : txt) <- lines <$> readFile path
+  return ((VU.replicate (w * h) False) VU.// (lst (read pos) txt))
     where
       (w, h) = (fieldWidth fd, fieldHeight fd)
-      lst pos = let (x, y) = read pos in concatMap (f [x ..]) $ zip [y ..] text
+      lst (x, y) txt = concatMap (f [x ..]) $ zip [y ..] txt
       f is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
       conv c = if c == '#' then True else False
-
-
 
 -- | モデルを図形に変換する関数
 drawModel :: Field -> Model -> Picture
