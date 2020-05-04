@@ -35,14 +35,14 @@ speed  =  15 :: Int   -- ^ 描画スピード
 
 
 ---------------------------------------------------
--- * オプション
+-- * コマンドオプション
 ---------------------------------------------------
 
 data Option = Option
-    { file :: String
-    , fw   :: Int
-    , fh   :: Int
-    , sd   :: Int
+    { file :: String   -- ^ 読み込むファイル名
+    , fdWidth :: Int   -- ^ 横の Cell 数
+    , fdHeight :: Int  -- ^ 縦の Cell 数
+    , drawSpeed :: Int -- ^ 描画スピード
     }
 
 opt :: Parser Option
@@ -70,11 +70,11 @@ initCells :: Field -> FilePath -> IO Model
 initCells fd path = if null path
                     then VU.replicateM (w * h) (randomRIO (0, 1))
                     else do
-  (pos : txt) <- lines <$> readFile path
-  return ((VU.replicate (w * h) 0) VU.// (lst (read pos) txt))
+  (pos : css) <- lines <$> readFile path
+  return ((VU.replicate (w * h) 0) VU.// (lst (read pos) css))
     where
       (w, h) = (fieldWidth fd, fieldHeight fd)
-      lst (x, y) txt = concatMap (f [x ..]) $ zip [y ..] txt
+      lst (x, y) css = concatMap (f [x ..]) $ zip [y ..] css
       f is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
       conv c = if c == '#' then 1 else 0
 
