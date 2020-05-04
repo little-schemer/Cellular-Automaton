@@ -13,11 +13,13 @@ module Main where
 
 
 import           Control.Applicative
+import           Data.Semigroup               ((<>))
 import qualified Data.Vector                  as V
 import qualified Data.Vector.Unboxed          as VU
 import           Field
 import           Graphics.Gloss
 import           Graphics.Gloss.Data.ViewPort
+import           Options.Applicative
 import           System.Environment
 import           System.Random
 
@@ -25,13 +27,32 @@ import           System.Random
 type Model = VU.Vector Bool
 
 
------------------------------------------
+---------------------------------------------------
 -- * パラメータ
------------------------------------------
+---------------------------------------------------
 
-width  = 500 :: Int             -- 横の Cell 数
-height = 250 :: Int             -- 縦の Cell 数
+width  = 300 :: Int             -- 横の Cell 数
+height = 200 :: Int             -- 縦の Cell 数
 size   =   3 :: Float           -- Cell のサイズ
+
+
+---------------------------------------------------
+-- * オプション
+---------------------------------------------------
+
+data Option = Option
+    { patternFile :: String
+    , widthF      :: Int
+    , heightF     :: Int
+    , speed       :: Int
+    }
+
+options :: Parser Option
+options = Option
+  <$> strOption   (short 'f' <> value "")
+  <*> option auto (short 'w' <> value width)
+  <*> option auto (short 'h' <> value height)
+  <*> option auto (short 's' <> value 15)
 
 
 -----------------------------------------
@@ -40,19 +61,19 @@ size   =   3 :: Float           -- Cell のサイズ
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let fd = initField width height size moore
-  cells <- if null args
-           then VU.replicateM (width * height) (randomIO :: IO Bool)
-           else initCells fd $ head args
-  simulate (window fd) black 20 cells (drawModel fd) (simCells fd)
+  Option f w h s <- execParser (info options mempty)
+  let fd = initField w h size moore
+  cells <- if null f
+           then VU.replicateM (w * h) (randomIO :: IO Bool)
+           else initCells fd f
+  simulate (window fd) black s cells (drawModel fd) (simCells fd)
     where window fd = InWindow "Life Game" (windowSize fd) (0, 0)
 
 -- | Cell の初期化
 initCells :: Field -> FilePath -> IO Model
 initCells fd path = do
   (pos : text) <- lines <$> readFile path
-  return ((VU.replicate (width * height) False) VU.// (g (read pos) text))
+  return ((VU.replicate (fieldWidth fd * fieldHeight fd) False) VU.// (g (read pos) text))
     where
       g (x, y) css = concatMap (h [x ..]) $ zip [y ..] css
       h is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
