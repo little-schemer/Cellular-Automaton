@@ -32,8 +32,6 @@ type Model = VU.Vector Bool
 width  = 500 :: Int             -- 横の Cell 数
 height = 250 :: Int             -- 縦の Cell 数
 size   =   3 :: Float           -- Cell のサイズ
-field  = initField width height size moore
-
 
 
 -----------------------------------------
@@ -43,34 +41,35 @@ field  = initField width height size moore
 main :: IO ()
 main = do
   args <- getArgs
+  let fd = initField width height size moore
   cells <- if null args
            then VU.replicateM (width * height) (randomIO :: IO Bool)
-           else initCells $ head args
-  simulate window black 30 cells drawModel simCells
-    where window = InWindow "Life Game" (windowSize field) (0, 0)
+           else initCells fd $ head args
+  simulate (window fd) black 20 cells (drawModel fd) (simCells fd)
+    where window fd = InWindow "Life Game" (windowSize fd) (0, 0)
 
 -- | Cell の初期化
-initCells :: FilePath -> IO Model
-initCells path = do
+initCells :: Field -> FilePath -> IO Model
+initCells fd path = do
   (pos : text) <- lines <$> readFile path
   return ((VU.replicate (width * height) False) VU.// (g (read pos) text))
     where
       g (x, y) css = concatMap (h [x ..]) $ zip [y ..] css
-      h is (j, cs) = [(posToIndex field (i, j), conv c) | (i, c) <- zip is cs]
+      h is (j, cs) = [(posToIndex fd (i, j), conv c) | (i, c) <- zip is cs]
       conv c = if c == '#' then True else False
 
 -- | モデルを図形に変換する関数
-drawModel :: Model -> Picture
-drawModel cells = Pictures $ V.toList $ V.imap drawCell $ V.convert cells
-  where drawCell i cell = if cell then indexToDrawCell field i cyan else Blank
+drawModel :: Field -> Model -> Picture
+drawModel fd cells = Pictures $ V.toList $ V.imap drawCell $ V.convert cells
+  where drawCell i cell = if cell then indexToDrawCell fd i cyan else Blank
 
 -- | モデルを更新する関数
-simCells :: ViewPort -> Float -> Model -> Model
-simCells _ _ cells = VU.imap check cells
+simCells :: Field -> ViewPort -> Float -> Model -> Model
+simCells fd _ _ cells = VU.imap check cells
   where
     check i bool
       | bool      = if (cellNum == 2 || cellNum == 3) then True else False
       | otherwise = if (cellNum == 3)                 then True else False
       where
-        m = (neighborTbl field) V.! i
-        cellNum = length $ filter id $ map (cells VU.!) m
+        neighborLst = (neighborTbl fd) V.! i
+        cellNum     = sum [if cells VU.! j then 1 else 0 | j <- neighborLst]
