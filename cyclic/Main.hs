@@ -75,7 +75,7 @@ colors st = [makeColorI r g 150 a | (r, g, a) <- zip3 rLst gLst aLst]
     aLst = cycle [100, 200, 150, 250]
 
 drawModel :: Field -> Model -> Picture
-drawModel fd (cells, st, clrs) = Pictures $ V.toList $ V.imap drawCell $ V.convert cells
+drawModel fd (cells, _, clrs) = Pictures $ V.toList $ V.imap drawCell $ V.convert cells
   where drawCell i cell = indexToDrawCell fd i (clrs !! cell)
 
 
