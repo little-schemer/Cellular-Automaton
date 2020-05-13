@@ -47,10 +47,10 @@ data Option = Option
 
 opt :: Parser Option
 opt = Option
-  <$> strOption   (short 'f' <> value "")
-  <*> option auto (short 'w' <> value width)
-  <*> option auto (short 'h' <> value height)
-  <*> option auto (short 's' <> value speed)
+  <$> strOption   (short 'f' <> value ""     <> metavar "String")
+  <*> option auto (short 'w' <> value width  <> metavar "Int")
+  <*> option auto (short 'h' <> value height <> metavar "Int")
+  <*> option auto (short 's' <> value speed  <> metavar "Int")
 
 
 ---------------------------------------------------
