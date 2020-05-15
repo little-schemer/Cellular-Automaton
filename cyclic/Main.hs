@@ -62,7 +62,7 @@ main = do
   cells <- VU.replicateM (w * h) (randomRIO (0, st))
   let model = (cells, st, colors st)
   let window = InWindow "Cyclic" (windowSize fd) (0, 0)
-  simulate window black 15 model (drawModel fd) (simModel fd)
+  simulate window black 20 model (drawModel fd) (simModel fd)
     where
       nf "n" = neumann
       nf "m" = moore
