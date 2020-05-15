@@ -39,10 +39,10 @@ speed  =  15 :: Int   -- ^ 描画スピード
 ---------------------------------------------------
 
 data Option = Option
-    { file :: String   -- ^ 読み込むファイル名
-    , fdWidth :: Int   -- ^ 横の Cell 数
-    , fdHeight :: Int  -- ^ 縦の Cell 数
-    , drawSpeed :: Int -- ^ 描画スピード
+    { file      :: String       -- ^ 読み込むファイル名
+    , fdWidth   :: Int          -- ^ 横の Cell 数
+    , fdHeight  :: Int          -- ^ 縦の Cell 数
+    , drawSpeed :: Int          -- ^ 描画スピード
     }
 
 opt :: Parser Option

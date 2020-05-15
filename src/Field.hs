@@ -39,14 +39,11 @@ initField :: Int                                 -- ^ 横の Cell 数
           -> Float                               -- ^ Cell の描画サイズ
           -> (Int -> Int -> Position -> [Index]) -- ^ 近傍を計算する関数
           -> Field
-initField width height size nbFunc =
-  Field { fieldWidth  = width
-        , fieldHeight = height
-        , cellSize    = size
-        , pointTbl    = VU.map (posToPoint' width height size) $ V.convert posTbl
-        , neighborTbl = V.map (nbFunc width height) posTbl
-        }
-  where posTbl = V.generate (width * height) (indexToPos' width)
+initField width height size nbFunc = Field width height size pTbl nTbl
+  where
+    posTbl = V.generate (width * height) (indexToPos' width)
+    pTbl   = VU.map (posToPoint' width height size) $ V.convert posTbl
+    nTbl   = V.map (nbFunc width height) posTbl
 
 windowSize :: Field -> (Int, Int)
 windowSize fd = (fieldWidth fd * ics, fieldHeight fd * ics)
