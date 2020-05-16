@@ -42,8 +42,8 @@ initField :: Int                                 -- ^ 横の Cell 数
           -> Field
 initField width height size nbFunc = Field width height size pic pTbl nTbl
   where
-    -- pic    = rectangleSolid (size - 1) (size - 1)
-    pic    = circleSolid (size / 2 - 0.1)
+    pic    = rectangleSolid (size - 1) (size - 1)
+    -- pic    = circleSolid (size / 2 - 0.1)
     posTbl = V.generate (width * height) (indexToPos' width)
     pTbl   = VU.map (posToPoint' width height size) $ V.convert posTbl
     nTbl   = V.map (nbFunc width height) posTbl

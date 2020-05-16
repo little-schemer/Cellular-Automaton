@@ -38,7 +38,7 @@ toFoward =  0 :: Int
 main :: IO ()
 main = simulate window black 30 model drawModel simAnt
   where
-    window = InWindow "Langton's Ant" (windowSize width height size) (0, 0)
+    window = InWindow "Langton's Ant" (windowSize field) (0, 0)
     model  = Model { cells   = V.replicate (width * height) black
                    , antHead = 1
                    , antPos  = (div width 2, div height 2)
@@ -63,4 +63,4 @@ simAnt _ _ md = md { cells = cells', antHead = antHead', antPos = antPos' }
       where cellColor = (cells md) V.! antIdx
     cells' = (cells md) V.// [(antIdx, clr)]
     antHead' = mod (antHead md + move) 4
-    antPos' = indexToPos field $ ((neighborhoodTable field) V.! antIdx) !! antHead'
+    antPos' = indexToPos field $ ((neighborTbl field) V.! antIdx) !! antHead'
