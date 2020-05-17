@@ -23,6 +23,7 @@ data Field = Field
     { fieldWidth  :: Int
     , fieldHeight :: Int
     , cellSize    :: Float
+    , cellPicture :: Picture
     , pointTbl    :: VU.Vector Point
     , neighborTbl :: V.Vector [Index]
     } deriving Show
@@ -38,8 +39,10 @@ initField :: Int                                 -- ^ 横の Cell 数
           -> Float                               -- ^ Cell の描画サイズ
           -> (Int -> Int -> Position -> [Index]) -- ^ 近傍を計算する関数
           -> Field
-initField width height size nbFunc = Field width height size pTbl nTbl
+initField width height size nbFunc = Field width height size pic pTbl nTbl
   where
+    pic    = rectangleSolid (size - 1) (size - 1)
+    -- pic    = circleSolid (size / 2 - 0.1)
     posTbl = V.generate (width * height) (indexToPos' width)
     pTbl   = VU.map (posToPoint' width height size) $ V.convert posTbl
     nTbl   = V.map (nbFunc width height) posTbl
@@ -76,7 +79,7 @@ posToPoint' :: Int -> Int -> Float -> Position -> Point
 posToPoint' width height size (x, y) = (x', y')
   where
     [w, h, xx, yy] = map fromIntegral [width, height, x, y]
-    (x', y') = ((xx - w / 2) * size, (h / 2 - yy) * size)
+    (x', y') = ((xx - w / 2 + 0.5) * size, (h / 2 - yy - 0.5) * size)
 
 
 ---------------------------------------------------
@@ -85,11 +88,8 @@ posToPoint' width height size (x, y) = (x', y')
 
 -- | Cell の描画
 indexToDrawCell :: Field -> Index -> Color -> Picture
-indexToDrawCell fd i c = Color c pic
-  where
-    pic = Polygon [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
-    (x0, y0) = (pointTbl fd) VU.! i
-    (x1, y1) = (x0 + cellSize fd - 1, y0 - cellSize fd + 1)
+indexToDrawCell fd i c = Translate x y $ Color c $ cellPicture fd
+  where (x, y) = (pointTbl fd) VU.! i
 
 
 ---------------------------------------------------
