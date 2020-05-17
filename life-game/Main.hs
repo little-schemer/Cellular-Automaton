@@ -30,7 +30,7 @@ type Model = VU.Vector Int
 
 width  = 300 :: Int   -- ^ 横の Cell 数
 height = 200 :: Int   -- ^ 縦の Cell 数
-size   =   3 :: Float -- ^ Cell のサイズ
+size   =   4 :: Float -- ^ Cell のサイズ
 speed  =  15 :: Int   -- ^ 描画スピード
 
 

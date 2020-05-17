@@ -25,8 +25,7 @@ data Field = Field
     , cellSize    :: Float
     , pointTbl    :: VU.Vector Point
     , neighborTbl :: V.Vector [Index]
-    }
-    deriving Show
+    } deriving Show
 
 
 ---------------------------------------------------
