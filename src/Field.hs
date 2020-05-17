@@ -26,8 +26,7 @@ data Field = Field
     , cellPicture :: Picture
     , pointTbl    :: VU.Vector Point
     , neighborTbl :: V.Vector [Index]
-    }
-    deriving Show
+    } deriving Show
 
 
 ---------------------------------------------------
